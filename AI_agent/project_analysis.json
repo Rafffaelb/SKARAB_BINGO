@@ -1,0 +1,386 @@
+{
+  "project_name": "SKARAB_BINGO",
+  "root_directory": {
+    "name": "SKARAB_BINGO",
+    "type": "directory",
+    "files": {
+      "README.md": {
+        "type": "text",
+        "size": 10363,
+        "first_lines": [
+          "# SKARAB_BINGO",
+          "This repository contains code for programming the digital back-end of the BINGO radio telescope.",
+          "",
+          "## Overview",
+          "",
+          "This repository contains firmware and control scripts for the SKARAB platform used in the BINGO (Baryon Oscillation Spectroscopic Survey) radio telescope project. The firmware is designed to work with the SKARAB (Square Kilometre Array Reconfigurable Application Board) platform equipped with Virtex-7 FPGA and ADC mezzanine cards.",
+          "",
+          "## Firmware Directories",
+          "",
+          "### 1. baseband_23mhz"
+        ],
+        "estimated_purpose": "Project README file with general information",
+        "relative_path": "README.md"
+      }
+    },
+    "subdirectories": {
+      "decimation8_1k_": {
+        "name": "decimation8_1k_",
+        "type": "directory",
+        "files": {
+          "decimation8_1k (1).py": {
+            "type": "python",
+            "error": "inconsistent use of tabs and spaces in indentation (<unknown>, line 91)",
+            "size": 23981,
+            "relative_path": "decimation8_1k_/decimation8_1k (1).py"
+          }
+        },
+        "subdirectories": {},
+        "relative_path": "decimation8_1k_"
+      },
+      "AI_agent": {
+        "name": "AI_agent",
+        "type": "directory",
+        "files": {
+          "analyzer.py": {
+            "type": "python",
+            "size": 10657,
+            "functions": [
+              {
+                "name": "main",
+                "docstring": null,
+                "line_count": 4
+              },
+              {
+                "name": "__init__",
+                "docstring": null,
+                "line_count": 2
+              },
+              {
+                "name": "analyze_python_file",
+                "docstring": "Analyze a Python file and extract key information.",
+                "line_count": 52
+              },
+              {
+                "name": "analyze_tex_file",
+                "docstring": "Analyze a LaTeX file and extract key information.",
+                "line_count": 40
+              },
+              {
+                "name": "analyze_text_file",
+                "docstring": "Analyze a text file and extract key information.",
+                "line_count": 40
+              },
+              {
+                "name": "_estimate_purpose",
+                "docstring": "Estimate the purpose of a file based on its content.",
+                "line_count": 18
+              },
+              {
+                "name": "analyze_directory",
+                "docstring": "Recursively analyze a directory and its files.",
+                "line_count": 33
+              },
+              {
+                "name": "analyze_project",
+                "docstring": "Analyze the entire project and generate structured results.",
+                "line_count": 15
+              },
+              {
+                "name": "save_analysis",
+                "docstring": "Save the analysis results to a JSON file.",
+                "line_count": 5
+              },
+              {
+                "name": "load_analysis",
+                "docstring": "Load previously saved analysis results.",
+                "line_count": 8
+              }
+            ],
+            "classes": [
+              {
+                "name": "ProjectAnalyzer",
+                "docstring": null,
+                "methods": [
+                  "__init__",
+                  "analyze_python_file",
+                  "analyze_tex_file",
+                  "analyze_text_file",
+                  "_estimate_purpose",
+                  "analyze_directory",
+                  "analyze_project",
+                  "save_analysis",
+                  "load_analysis"
+                ]
+              }
+            ],
+            "docstring": "Analyzer module for SKARAB_BINGO project.\nThis module analyzes .py, .tex, .txt and README files in the project directory\nand creates a JSON file describing the functionality of each file and folder.",
+            "initial_comments": [
+              "!/usr/bin/env python3"
+            ],
+            "estimated_purpose": "Support script for radio astronomy data processing",
+            "relative_path": "AI_agent/analyzer.py"
+          },
+          "README.md": {
+            "type": "text",
+            "size": 3629,
+            "first_lines": [
+              "# SKARAB_BINGO AI Assistant",
+              "",
+              "An intelligent agent to help users understand the SKARAB_BINGO project functionality through natural language queries.",
+              "",
+              "## Overview",
+              "",
+              "This AI assistant helps users understand the SKARAB_BINGO radio astronomy project by analyzing project files and providing intelligent responses to user questions. The system consists of three main components:",
+              "",
+              "1. **Analyzer**: Scans project files (.py, .tex, .txt, README) and creates a structured JSON description",
+              "2. **AI Backend**: Interfaces with the DeepSeek API to answer user questions with context"
+            ],
+            "estimated_purpose": "Project README file with general information",
+            "relative_path": "AI_agent/README.md"
+          },
+          "ai_backend.py": {
+            "type": "python",
+            "size": 10815,
+            "functions": [
+              {
+                "name": "main",
+                "docstring": "Main function for testing the AI backend.",
+                "line_count": 9
+              },
+              {
+                "name": "__init__",
+                "docstring": null,
+                "line_count": 6
+              },
+              {
+                "name": "_load_analysis",
+                "docstring": "Load the project analysis JSON file.",
+                "line_count": 11
+              },
+              {
+                "name": "_read_file_content",
+                "docstring": "Read the content of a file given its relative path.",
+                "line_count": 14
+              },
+              {
+                "name": "_find_relevant_file",
+                "docstring": "Find the most relevant file based on the user query.",
+                "line_count": 30
+              },
+              {
+                "name": "_prepare_context",
+                "docstring": "Prepare context for the AI model based on the query.",
+                "line_count": 7
+              },
+              {
+                "name": "_build_prompt",
+                "docstring": "Build the prompt for the AI model.",
+                "line_count": 36
+              },
+              {
+                "name": "query_ai_stream",
+                "docstring": "Query the AI model with a user question and return a streaming response.",
+                "line_count": 59
+              },
+              {
+                "name": "query_ai",
+                "docstring": "Query the AI model with a user question.",
+                "line_count": 47
+              },
+              {
+                "name": "search_in_directory",
+                "docstring": null,
+                "line_count": 17
+              }
+            ],
+            "classes": [
+              {
+                "name": "AIAssistant",
+                "docstring": null,
+                "methods": [
+                  "__init__",
+                  "_load_analysis",
+                  "_read_file_content",
+                  "_find_relevant_file",
+                  "_prepare_context",
+                  "_build_prompt",
+                  "query_ai_stream",
+                  "query_ai"
+                ]
+              }
+            ],
+            "docstring": "AI Backend for SKARAB_BINGO project.\nThis module interacts with the DeepSeek API to answer user questions about the project.",
+            "initial_comments": [
+              "!/usr/bin/env python3"
+            ],
+            "estimated_purpose": "Support script for radio astronomy data processing",
+            "relative_path": "AI_agent/ai_backend.py"
+          },
+          "server.py": {
+            "type": "python",
+            "size": 2401,
+            "functions": [
+              {
+                "name": "index",
+                "docstring": "Serve the main HTML page.",
+                "line_count": 2
+              },
+              {
+                "name": "ask_question",
+                "docstring": "Handle user questions.",
+                "line_count": 22
+              },
+              {
+                "name": "ask_question_stream",
+                "docstring": "Handle user questions with streaming response.",
+                "line_count": 20
+              },
+              {
+                "name": "error_generator",
+                "docstring": null,
+                "line_count": 1
+              },
+              {
+                "name": "error_generator",
+                "docstring": null,
+                "line_count": 1
+              }
+            ],
+            "classes": [],
+            "docstring": "Web server for SKARAB_BINGO AI Assistant.\nThis module serves the web interface and handles communication with the AI backend.",
+            "initial_comments": [
+              "!/usr/bin/env python3",
+              "设置日志记录",
+              "Enable CORS for all routes"
+            ],
+            "estimated_purpose": "Support script for radio astronomy data processing",
+            "relative_path": "AI_agent/server.py"
+          },
+          "requirements.txt": {
+            "type": "text",
+            "size": 47,
+            "first_lines": [
+              "flask==2.3.3",
+              "requests==2.31.0",
+              "flask-cors==4.0.0"
+            ],
+            "estimated_purpose": "Text documentation file",
+            "relative_path": "AI_agent/requirements.txt"
+          }
+        },
+        "subdirectories": {
+          "templates": {
+            "name": "templates",
+            "type": "directory",
+            "files": {},
+            "subdirectories": {},
+            "relative_path": "AI_agent/templates"
+          }
+        },
+        "relative_path": "AI_agent"
+      },
+      "CASPER_tut_intro": {
+        "name": "CASPER_tut_intro",
+        "type": "directory",
+        "files": {
+          "CASPER_tut_intro.txt": {
+            "type": "text",
+            "size": 26639,
+            "first_lines": [
+              ".. role:: raw-html-m2r(raw)",
+              "   :format: html",
+              "",
+              "",
+              "Tutorial 1: Introduction to Simulink",
+              "====================================",
+              "",
+              "In this tutorial, you will create a simple Simulink design using both standard Xilinx system generator blockset, as well as library blocks specific to CASPER boards (so-called \"Yellow Blocks\"). At the end of this tutorial, you will know how to generate an fpg file, program it to a CASPER FPGA board, and interact with your running hardware design using `casperfpga <https://github.com/casper-astro/casperfpga>`_ via a Python Interface.",
+              "",
+              "Creating Your Design"
+            ],
+            "estimated_purpose": "Text documentation file",
+            "relative_path": "CASPER_tut_intro/CASPER_tut_intro.txt"
+          }
+        },
+        "subdirectories": {},
+        "relative_path": "CASPER_tut_intro"
+      },
+      "Nota_tecnica_SKARAB": {
+        "name": "Nota_tecnica_SKARAB",
+        "type": "directory",
+        "files": {
+          "main.tex": {
+            "type": "latex",
+            "size": 50575,
+            "title": null,
+            "abstract": "A radioastronomia demanda alta precisão e controle nos sistemas de aquisição de dados. O radiotelescópio BINGO, dedicado ao estudo das Oscilações Acústicas de Bárions (BAO) e da energia escura, utiliza componentes altamente especializados para atender a esses requisitos. Entre eles, destaca-se a plataforma SKARAB, responsável pela conversão dos sinais analógicos em digitais, bem como pelo processamento e armazenamento dos dados coletados. O presente trabalho tem como objetivo descrever, através de uma nota técnica, as componentes, processo de instalação, primeiros resultados obtidos e o status atual da plataforma SKARAB no contexto do projeto BINGO. São discutidos os principais desafios enfrentados durante a instalação e configuração do sistema, desenvolvido pela Colaboração para Processamento de Sinais Astronômicos e Pesquisas Eletrônicas (CASPER). Utilizando os softwares disponibilizados por essa colaboração, configuramos a SKARAB como um analisador de espectro em tempo real e avaliamos os sinais obtidos a partir de diferentes entradas do conversor analógico-digital: um gerador de sinais, uma antena telescópica e uma fonte de ruído. Os testes em bancada demonstraram resultados satisfatórios quanto à visualização e ao armazenamento dos dados, confirmando o sucesso da implementação do analisador e abrindo caminho para futuras discussões sobre captura de dados, calibração e estabilidade do sistema.",
+            "sections": [
+              "Introdução",
+              "Descrição das SKARABs",
+              "Descrição das atividades",
+              "Status atual do trabalho",
+              "Agradecimentos",
+              "Instalação e Execução do \\textit{casperfpga",
+              "Instalação e Execução do \\textit{mlib\\_devel"
+            ],
+            "subsections": [
+              "Introdução à FPGA e Computação Reconfigurável",
+              "Mezzanine ADC da SKARAB: TI ADC32RF45",
+              "Descrição do setup de medidas",
+              "Testes do fabricante",
+              "Instalação de pacotes básicos",
+              "A questão da decimação",
+              "Resultados",
+              "O espectrômetro do BINGO e desafios",
+              "Instalação do \\textit{casperfpga",
+              "Execução na IDE \\textit{IPython"
+            ],
+            "estimated_purpose": "A radioastronomia demanda alta precisão e controle nos sistemas de aquisição de dados. O radiotelescópio BINGO, dedicado ao estudo das Oscilações Acústicas de Bárions (BAO) e da energia escura, utiliza componentes altamente especializados para atender a esses requisitos. Entre eles, destaca-se a plataforma SKARAB, responsável pela conversão dos sinais analógicos em digitais, bem como pelo processamento e armazenamento dos dados coletados. O presente trabalho tem como objetivo descrever, através de uma nota técnica, as componentes, processo de instalação, primeiros resultados obtidos e o status atual da plataforma SKARAB no contexto do projeto BINGO. São discutidos os principais desafios enfrentados durante a instalação e configuração do sistema, desenvolvido pela Colaboração para Processamento de Sinais Astronômicos e Pesquisas Eletrônicas (CASPER). Utilizando os softwares disponibilizados por essa colaboração, configuramos a SKARAB como um analisador de espectro em tempo real e avaliamos os sinais obtidos a partir de diferentes entradas do conversor analógico-digital: um gerador de sinais, uma antena telescópica e uma fonte de ruído. Os testes em bancada demonstraram resultados satisfatórios quanto à visualização e ao armazenamento dos dados, confirmando o sucesso da implementação do analisador e abrindo caminho para futuras discussões sobre captura de dados, calibração e estabilidade do sistema.",
+            "relative_path": "Nota_tecnica_SKARAB/main.tex"
+          }
+        },
+        "subdirectories": {
+          "fig": {
+            "name": "fig",
+            "type": "directory",
+            "files": {},
+            "subdirectories": {},
+            "relative_path": "Nota_tecnica_SKARAB/fig"
+          }
+        },
+        "relative_path": "Nota_tecnica_SKARAB"
+      },
+      "bingo_dec16_32k_": {
+        "name": "bingo_dec16_32k_",
+        "type": "directory",
+        "files": {
+          "bingo_dec16_32k.py": {
+            "type": "python",
+            "error": "inconsistent use of tabs and spaces in indentation (<unknown>, line 86)",
+            "size": 22344,
+            "relative_path": "bingo_dec16_32k_/bingo_dec16_32k.py"
+          }
+        },
+        "subdirectories": {},
+        "relative_path": "bingo_dec16_32k_"
+      },
+      "baseband_23mhz": {
+        "name": "baseband_23mhz",
+        "type": "directory",
+        "files": {
+          "pulsar_23mhz_conplot.py": {
+            "type": "python",
+            "error": "Missing parentheses in call to 'print'. Did you mean print(indx, peak)? (<unknown>, line 135)",
+            "size": 24679,
+            "relative_path": "baseband_23mhz/pulsar_23mhz_conplot.py"
+          }
+        },
+        "subdirectories": {},
+        "relative_path": "baseband_23mhz"
+      }
+    },
+    "relative_path": "."
+  },
+  "analysis_timestamp": "1765850714.8281634"
+}
