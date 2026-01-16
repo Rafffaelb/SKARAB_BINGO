@@ -50,6 +50,9 @@ LABMET \& Unidade Acadêmica de Física - Universidade Federal de Campina Grande
 
 \abstract{Esta nota t\'ecnica descreve a implementa\c{c}\~ao, configura\c{c}\~ao e os resultados preliminares da plataforma SKARAB no radiotelesc\'opio BINGO. Utilizando o ecossistema CASPER, a plataforma foi configurada como um analisador de espectro em tempo real para o processamento digital de sinais. Discutimos os desafios de instala\c{c}\~ao, a valida\c{c}\~ao do sistema com diferentes fontes de sinal e a infraestrutura de armazenamento de dados. Os resultados em bancada confirmam a viabilidade da SKARAB para a opera\c{c}\~ao do BINGO, estabelecendo a base para futuras discuss\~oes sobre calibra\c{c}\~ao e estabilidade do sistema.}
 
+\tableofcontents
+\newpage
+
 \section{Introdução}
 
 \quad O presente trabalho tem como objetivo principal descrever o equipamento, a configuração, a utilização e a análise da plataforma SKARAB no contexto do radiotelescópio BINGO. 
@@ -294,7 +297,7 @@ A instalação detalhada desses componentes é apresentada nos apêndices desta 
 
 \subsection{Geração de Bitstream e Programação da FPGA}
 
-\quad O processo de transformar um modelo matemático em um hardware funcional na FPGA da SKARAB envolve duas etapas principais: a geração do arquivo de configuração (bitstream) e a transferência deste para a placa.
+\quad O processo de transformar um modelo matemático em um hardware funcional na FPGA da SKARAB envolve duas etapas principais: a geração do arquivo de configuração (bitstream) e a transferência deste para a placa. \textbf{É importante ressaltar que este procedimento é geral para qualquer tutorial ou design desenvolvido para a placa}, consistindo nos passos fundamentais de compilação e implementação (\textit{deployment}) do \textit{bitstream}.
 
 \subsubsection{Geração de Bitstream}
 
@@ -309,7 +312,7 @@ A geração do bitstream é realizada através do ambiente MATLAB/Simulink utili
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=0.8\textwidth]{fig/skarab_workflow.png}
-\caption{Fluxo de trabalho para a plataforma SKARAB, desde a modelagem em Simulink até a programação da FPGA.}
+\caption{Fluxo de trabalho geral para a plataforma SKARAB, aplic\'avel a qualquer design e tutorial. O processo abrange desde a modelagem em Simulink at\'e a gera\c{c}\~ao do bitstream e programa\c{c}\~ao da FPGA.}
 \label{fig:SkarabWorkflow}
 \end{figure}
 
@@ -400,12 +403,54 @@ Uma vez gerado o arquivo \texttt{.fpg}, a programação da SKARAB é feita via r
 \end{enumerate}
 Este processo configura instantaneamente a FPGA com o novo design, permitindo o início imediato da aquisição ou processamento de dados.
 
+
+
+\subsection{Espectr\'ometro (Tutorial 4)}
+
+\quad Um espectr\^ometro digital converte sinais do dom\'inio do tempo para o dom\'inio da frequ\^encia, geralmente utilizando o algoritmo de Transformada R\'apida de Fourier (FFT). No contexto do BINGO, o design do espectr\^ometro deve equilibrar a resolu\c{c}\~ao temporal (necess\'aria para detectar eventos r\'apidos) e a resolu\c{c}\~ao espectral (para mapeamento de HI). Esta se\c{c}\~ao detalha os blocos fundamentais do design do espectr\^ometro de banda larga desenvolvido no ecossistema CASPER para a SKARAB.
+
+\subsubsection{Digitaliza\c{c}\~ao (ADC)}
+
+\quad O primeiro passo \'e a digitaliza\c{c}\~ao do sinal anal\'ogico. O bloco \texttt{skarab\_adc} (Fig.~\ref{fig:tut_spec_adc}) opera a uma taxa de amostragem de 3,0~GHz com um fator de decima\c{c}\~ao interno de 4, resultando em uma taxa efetiva de amostragem de 750~MHz. O sinal \'e quantizado em 16 bits (formato \texttt{fix\_16\_15}), representando valores entre -1 e 1. A largura de banda total dispon\'ivel (Nyquist) \'e de 375~MHz.
+
 \begin{figure}[!htb]
 \centering
-\includegraphics[width=0.8\textwidth]{fig/skarab_workflow.png}
-\caption{Fluxo de trabalho para a plataforma SKARAB, desde a modelagem em Simulink até a programação da FPGA.}
-\label{fig:SkarabWorkflowTut}
+\includegraphics[width=0.8\textwidth]{fig/tut_spec_adc_highres.png}
+\caption{Bloco de interface e par\^ametros do ADC da SKARAB (\texttt{skarab\_adc4x3g\_14}).}
+\label{fig:tut_spec_adc}
 \end{figure}
+
+\subsubsection{Transformada de Fourier (FFT)}
+
+\quad O bloco \texttt{fft} (Fig.~\ref{fig:tut_spec_fft}) \'e o n\'ucleo do processamento. Ele recebe fluxos complexos demultiplexados do ADC. Para a SKARAB, o design utiliza um FFT complexo projetado para processar amostras em paralelo, permitindo que o sistema opere em tempo real na frequ\^encia de clock da FPGA (187,5~MHz).
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.8\textwidth]{fig/tut_spec_fft_highres.png}
+\caption{Par\^ametros de configura\c{c}\~ao do bloco FFT (\textit{Size of FFT}: $2^{12} = 4096$ pontos).}
+\label{fig:tut_spec_fft}
+\end{figure}
+
+\subsubsection{C\'alculo de Pot\^encia e Acumula\c{c}\~ao}
+
+\quad Ap\'os a FFT, as componentes s\~ao enviadas para blocos de pot\^encia (\texttt{power}, Fig.~\ref{fig:tut_spec_power}), que calculam o quadrado da magnitude ($P = re^2 + im^2$). 
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.6\textwidth]{fig/tut_spec_power_highres.png}
+\caption{Implementa\c{c}\~ao do c\'alculo de pot\^encia no domínio digital.}
+\label{fig:tut_spec_power}
+\end{figure}
+
+\quad Para reduzir a taxa de dados e melhorar o sinal-ru\'ido, os espectros s\~ao integrados temporalmente no bloco \texttt{simple\_bram\_vacc} (Fig.~\ref{fig:tut_spec_vacc}). Os dados acumulados s\~ao armazenados em mem\'orias \texttt{BRAM} (\texttt{mem1}), que s\~ao lidas via Python.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.8\textwidth]{fig/tut_spec_vacc_highres.png}
+\caption{Acumulador vetorial em BRAM e registro de mem\'oria para leitura de dados.}
+\label{fig:tut_spec_vacc}
+\end{figure}
+
 
 \subsection{Resultados}
 
