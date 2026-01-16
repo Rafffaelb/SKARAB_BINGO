@@ -20,6 +20,10 @@
     pdfpagemode=FullScreen,
     }
 \usepackage{amssymb,amsmath,amsfonts,latexsym,graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tabularx,array,booktabs}
 \usepackage[left=2.5cm,right=2.5cm,top=1.5cm,bottom=2.5cm,footnotesep=0.5cm]{geometry}
 
 \setlength{\oddsidemargin}{0.5cm}
@@ -44,7 +48,7 @@ LABMET \& Unidade Acadêmica de Física - Universidade Federal de Campina Grande
 \end{center}
 % Text of the abstract
 
-\abstract{A radioastronomia demanda alta precisão e controle nos sistemas de aquisição de dados. O radiotelescópio BINGO, dedicado ao estudo das Oscilações Acústicas de Bárions (BAO) e da energia escura, utiliza componentes altamente especializados para atender a esses requisitos. Entre eles, destaca-se a plataforma SKARAB, responsável pela conversão dos sinais analógicos em digitais, bem como pelo processamento e armazenamento dos dados coletados. O presente trabalho tem como objetivo descrever, através de uma nota técnica, as componentes, processo de instalação, primeiros resultados obtidos e o status atual da plataforma SKARAB no contexto do projeto BINGO. São discutidos os principais desafios enfrentados durante a instalação e configuração do sistema, desenvolvido pela Colaboração para Processamento de Sinais Astronômicos e Pesquisas Eletrônicas (CASPER). Utilizando os softwares disponibilizados por essa colaboração, configuramos a SKARAB como um analisador de espectro em tempo real e avaliamos os sinais obtidos a partir de diferentes entradas do conversor analógico-digital: um gerador de sinais, uma antena telescópica e uma fonte de ruído. Os testes em bancada demonstraram resultados satisfatórios quanto à visualização e ao armazenamento dos dados, confirmando o sucesso da implementação do analisador e abrindo caminho para futuras discussões sobre captura de dados, calibração e estabilidade do sistema.}
+\abstract{Esta nota t\'ecnica descreve a implementa\c{c}\~ao, configura\c{c}\~ao e os resultados preliminares da plataforma SKARAB no radiotelesc\'opio BINGO. Utilizando o ecossistema CASPER, a plataforma foi configurada como um analisador de espectro em tempo real para o processamento digital de sinais. Discutimos os desafios de instala\c{c}\~ao, a valida\c{c}\~ao do sistema com diferentes fontes de sinal e a infraestrutura de armazenamento de dados. Os resultados em bancada confirmam a viabilidade da SKARAB para a opera\c{c}\~ao do BINGO, estabelecendo a base para futuras discuss\~oes sobre calibra\c{c}\~ao e estabilidade do sistema.}
 
 \section{Introdução}
 
@@ -75,7 +79,7 @@ Dessa forma, esta nota técnica está organizada nas seguintes seções: a Seç�
 
 \section{Descrição das SKARABs}
 
-\quad A SKARAB (\textbf{S}quare \textbf{K}ilometre \textbf{A}rray \textbf{R}econfigurable \textbf{A}pplication \textbf{B}oard) é uma plataforma de hardware de aquisição e processamento de dados baseada em FPGA (Field Programmable Gate Array), utilizando um Virtex-7 (XC7VX690T). Desenvolvida pela empresa sul-africana Peralex de acordo com as especificações do SKAO-SA, a SKARAB é ideal para aplicações em radioastronomia \cite{melis2024skarab} e otimizada para processamento digital de sinais de alto desempenho, possuindo mais de 690.000 células lógicas, 3.600 blocos DSP e 53 Mb de memória RAM.
+\quad A SKARAB (\textbf{S}quare \textbf{K}ilometre \textbf{A}rray \textbf{R}econfigurable \textbf{A}pplication \textbf{B}) é uma plataforma de hardware de aquisição e processamento de dados baseada em FPGA (Field Programmable Gate Array), utilizando um Virtex-7 (XC7VX690T). Desenvolvida pela empresa sul-africana Peralex de acordo com as especificações do SKAO-SA, a SKARAB é ideal para aplicações em radioastronomia \cite{melis2024skarab} e otimizada para processamento digital de sinais de alto desempenho, possuindo mais de 690.000 células lógicas, 3.600 blocos DSP e 53 Mb de memória RAM.
 
 Ela integra um conversor analógico-digital (ADC) de 14 bits com taxa de amostragem de 3 GSps, permitindo amostragem livre de aliasing até 1,5 GHz, adequada para o processamento simultâneo e preciso de múltiplas faixas de frequência. O ADC suporta conexão com um conversor digital descendente (DDC) de banda dupla, que inclui até três osciladores numericamente controlados (NCOs) de 16 bits por DDC, possibilitando saltos de frequência coerentes em fase.
 
@@ -231,59 +235,177 @@ Na placa SKARAB, a decimação é implementada digitalmente dentro do bloco DDC 
 No contexto do projeto BINGO, um fator de decimação igual a 8 mostra-se adequado para o comprimento de banda de interesse (ver linha 7 da Tabela \ref{tab1}). Esse fator resulta em uma largura de banda de 375 MHz, valor que pode ser ajustado conforme a taxa de amostragem selecionada para o ADC. A Tabela \ref{tab1} apresenta de forma completa a relação entre a taxa de amostragem de saída, a taxa de amostragem do ADC e do FPGA, bem como os fatores de decimação e de reamostragem (resampler) empregados no sistema.
 
 \begin{table}[htbp]
+\centering
 \caption{Taxas de Amostragem (\textbf{TA}) disponíveis no ADC da SKARAB.}
-\begin{center}
-\begin{tabular}{|p{1cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-\hline
-&\textbf{TA do ADC (MHz)} & \textbf{Decimação do ADC} & \textbf{Decimação da FPGA} & \textbf{Resampler FPGA} & \textbf{TA do Output (MHz)} & \textbf{Tipo do Output} \\
-\hline
-1.&2800& 1& 1 & 1 & 2800 & Real \\
-\hline
-2.&2560& 1& 1 & 1 & 2560 & Real \\
-\hline
-3.&2560& 1& 1 & 0.8 & 2048 & Real \\
-\hline
-4.&3000& 4& 1 & 1 & 750 & Complexo \\
-\hline
-5.&2560& 4& 1 & 1 & 640 & Complexo \\
-\hline
-6.&2560& 4& 1 & 0.8 & 512 & Complexo \\
-\hline
-7.&3000& 8& 1 & 1 & 375 & Complexo \\
-\hline
-8.&2560& 8& 1 & 1 & 320 & Complexo \\
-\hline
-9.&2560& 8& 1 & 0.8 & 256 & Complexo \\
-\hline
-10.&3000& 16& 1 & 1 & 187.5 & Complexo \\
-\hline
-11.&2560& 16& 1 & 1 & 160 & Complexo \\
-\hline
-12.&2560& 16& 1 & 0.8 & 128 & Complexo \\
-\hline
-13.&3000& 16& 2 & 1 & 93.75 & Complexo \\
-\hline
-14.&2560& 16& 2 & 1 & 80 & Complexo \\
-\hline
-15.&2560& 16& 2 & 0.8 & 64 & Complexo \\
-\hline
-16.&3000& 16& 4 & 1 & 46.875 & Complexo \\
-\hline
-17.&2560& 16& 4 & 1 & 40 & Complexo \\
-\hline
-18.&2560& 16& 4 & 0.8 & 32 & Complexo \\
-\hline
-19.&3000& 16& 8 & 1 & 23.4375 & Complexo \\
-\hline
-20.&2560& 16& 8 & 1 & 20 & Complexo \\
-\hline
-21.&2560& 16& 8 & 0.8 & 16 & Complexo \\
-\hline
-\end{tabular}
 \label{tab1}
+\small
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Ref} & \textbf{TA ADC} & \textbf{Decim. ADC} & \textbf{Decim. FPGA} & \textbf{Resamp.} & \textbf{TA Out} & \textbf{Tipo Out} \\ \hline
+1.&2800& 1& 1 & 1 & 2800 & Real \\ \hline
+2.&2560& 1& 1 & 1 & 2560 & Real \\ \hline
+3.&2560& 1& 1 & 0.8 & 2048 & Real \\ \hline
+4.&3000& 4& 1 & 1 & 750 & Complexo \\ \hline
+5.&2560& 4& 1 & 1 & 640 & Complexo \\ \hline
+6.&2560& 4& 1 & 0.8 & 512 & Complexo \\ \hline
+7.&3000& 8& 1 & 1 & 375 & Complexo \\ \hline
+8.&2560& 8& 1 & 1 & 320 & Complexo \\ \hline
+9.&2560& 8& 1 & 0.8 & 256 & Complexo \\ \hline
+10.&3000& 16& 1 & 1 & 187.5 & Complexo \\ \hline
+11.&2560& 16& 1 & 1 & 160 & Complexo \\ \hline
+12.&2560& 16& 1 & 0.8 & 128 & Complexo \\ \hline
+13.&3000& 16& 2 & 1 & 93.75 & Complexo \\ \hline
+14.&2560& 16& 2 & 1 & 80 & Complexo \\ \hline
+15.&2560& 16& 2 & 0.8 & 64 & Complexo \\ \hline
+16.&3000& 16& 4 & 1 & 46.875 & Complexo \\ \hline
+17.&2560& 16& 4 & 1 & 40 & Complexo \\ \hline
+18.&2560& 16& 4 & 0.8 & 32 & Complexo \\ \hline
+19.&3000& 16& 8 & 1 & 23.4375 & Complexo \\ \hline
+20.&2560& 16& 8 & 1 & 20 & Complexo \\ \hline
+21.&2560& 16& 8 & 0.8 & 16 & Complexo \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Requisitos de Software e Instalação}
+
+\quad Para o desenvolvimento e operação da plataforma SKARAB, é necessária uma infraestrutura de software específica, composta por ferramentas proprietárias e pacotes de código aberto mantidos pela colaboração CASPER. A Tabela \ref{tab:requirements} resume os principais requisitos de software e suas respectivas versões.
+
+\begin{table}[htbp]
+\caption{Requisitos de software para a plataforma SKARAB.}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Software / Pacote} & \textbf{Versão Requerida} \\ \hline
+Sistema Operacional & Ubuntu 16.04 LTS \\ \hline
+MATLAB & R2018a \\ \hline
+Xilinx Vivado & 2019.1 \\ \hline
+Python (Controle) & 2.7 (Ambiente \textit{casperfpga}) \\ \hline
+Python (Toolflow) & 3.x (Ambiente \textit{mlib\_devel}) \\ \hline
+\textit{casperfpga} & Última versão compatível (Python 2.7) \\ \hline
+\textit{mlib\_devel} & Master branch (compatível com Vivado 2019.1) \\ \hline
+\end{tabular}
+\label{tab:requirements}
 \end{center}
 \end{table}
 
+A instalação detalhada desses componentes é apresentada nos apêndices desta nota técnica. O Apêndice \ref{appendix:casperfpga} detalha a configuração do ambiente Python 2.7 e a instalação do pacote \textit{casperfpga}, essencial para a comunicação e programação da placa. O Apêndice \ref{appendix:mlib_devel} descreve o processo de instalação do MATLAB, Vivado e do toolflow \textit{mlib\_devel}, necessários para a criação de novos firmwares.
+
+\subsection{Geração de Bitstream e Programação da FPGA}
+
+\quad O processo de transformar um modelo matemático em um hardware funcional na FPGA da SKARAB envolve duas etapas principais: a geração do arquivo de configuração (bitstream) e a transferência deste para a placa.
+
+\subsubsection{Geração de Bitstream}
+
+A geração do bitstream é realizada através do ambiente MATLAB/Simulink utilizando o toolflow \textit{mlib\_devel}. O fluxo de trabalho segue os seguintes passos:
+\begin{enumerate}
+    \item \textbf{Modelagem}: O design do firmware é construído no Simulink utilizando blocos da biblioteca CASPER e do Xilinx System Generator.
+    \item \textbf{Configuração}: Definição do hardware alvo (SKARAB) e parâmetros de clock.
+    \item \textbf{Síntese}: O comando \texttt{jasper} no MATLAB inicia o processo de compilação automática, que utiliza o Vivado em segundo plano.
+    \item \textbf{Arquivo FPG}: Ao final, um arquivo \texttt{.fpg} é gerado, contendo o bitstream e metadados dos registros.
+\end{enumerate}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.8\textwidth]{fig/skarab_workflow.png}
+\caption{Fluxo de trabalho para a plataforma SKARAB, desde a modelagem em Simulink até a programação da FPGA.}
+\label{fig:SkarabWorkflow}
+\end{figure}
+
+\section{Tutorial de Introdução ao SKARAB}
+
+\quad Este tutorial, baseado na documentação oficial do CASPER\footnote{\url{https://casper-toolflow.readthedocs.io/projects/tutorials/en/latest/tutorials/skarab/tut_intro.html}}, descreve os passos fundamentais para criar, simular e compilar um design básico para a plataforma SKARAB. O objetivo é familiarizar o usuário com o fluxo de trabalho (\textit{toolflow}) e a integração entre MATLAB/Simulink e o hardware.
+
+\subsection{Configuração do Ambiente e Criação do Modelo}
+
+O primeiro passo é iniciar o MATLAB através do comando \texttt{startsg}, que carrega as bibliotecas CASPER e Xilinx necessárias. No Simulink, cria-se um novo modelo (arquivo \texttt{.slx}), observando restrições como evitar espaços ou letras maiúsculas no nome do arquivo e caminhos.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.6\textwidth]{fig/tut_platform.png}
+\caption{Seleção da plataforma SKARAB no bloco \textit{XPS Config} da biblioteca CASPER.}
+\label{fig:tut_platform}
+\end{figure}
+
+Deve-se adicionar o bloco \textit{System Generator} e o bloco de configuração da plataforma (\textit{XPS Config}), conforme mostrado na Fig. \ref{fig:tut_platform}. Para a SKARAB, é essencial configurar o clock de IP do usuário (\textit{User IP Clock Source}) para \texttt{sys\_clk} em designs experimentais iniciais.
+
+\subsection{Integração de Blocos e Lógica de Design}
+
+Cada design SKARAB deve conter um core de Ethernet para comunicação. Recomenda-se utilizar o template oficial que já inclui o core de 40GbE configurado (Fig. \ref{fig:tut_core}).
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.45\textwidth]{fig/tut_core.png}
+\caption{Subsistema de comunicação Ethernet 40GbE integrado ao modelo.}
+\label{fig:tut_core}
+\end{figure}
+
+O tutorial propõe dois exercícios práticos fundamentais:
+\begin{enumerate}
+    \item \textbf{LED Piscante}: Utiliza um contador de 27 bits, onde o bit mais significativo (MSB) é extraído via bloco \textit{Slice} e enviado a um bloco \textit{GPIO} mapeado para os LEDs da SKARAB (Fig. \ref{fig:tut_led_circuit}).
+    \item \textbf{Operação de Soma}: Demonstra o uso de registros de software (\textit{Software Registers}) para controle bidirecional. Registros "\textit{From Processor}" fornecem dados para um bloco \textit{AddSub}, e um registro "\textit{To Processor}" permite a leitura do resultado (Fig. \ref{fig:tut_adder_circuit}).
+\end{enumerate}
+
+\begin{figure}[!htb]
+\centering
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{fig/tut_led_circuit.png}
+    \caption{L\'ogica para controle de LED.}
+    \label{fig:tut_led_circuit}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{fig/tut_adder_circuit.png}
+    \caption{Circuito de soma via software.}
+    \label{fig:tut_adder_circuit}
+\end{minipage}
+\end{figure}
+
+\subsection{Simula\c{c}\~ao e Compila\c{c}\~ao}
+
+O design pode ser simulado com precis\~ao de clock no Simulink. Ap\'os validar o comportamento, executa-se o comando \texttt{jasper} no prompt do MATLAB. Este processo invoca o compilador da Xilinx e o Vivado para realizar a s\'intese e roteamento (Fig. \ref{fig:tut_compile}), gerando o arquivo \textit{fpg} final na pasta \texttt{outputs}.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.45\textwidth]{fig/tut_compile.png}
+\caption{Processo de compila\c{c}\~ao autom\'atica via \textit{toolflow}.}
+\label{fig:tut_compile}
+\end{figure}
+
+\subsection{Programação e Interação via Python}
+
+A programação da FPGA é realizada através da biblioteca \texttt{casperfpga}. O código abaixo ilustra o procedimento básico de carregamento do firmware e interação com os registros de hardware:
+
+\begin{verbatim}
+import casperfpga
+# Conexão com a placa
+fpga = casperfpga.CasperFpga('10.42.0.201')
+# Programação do bitstream
+fpga.upload_to_ram_and_program('skarab_tut_intro.fpg')
+# Manipulação de registros de software
+fpga.write_int('reg_a', 123)
+fpga.write_int('reg_b', 456)
+resultado = fpga.read_int('sum_a_b')
+\end{verbatim}
+\subsubsection{Programação da FPGA}
+
+Uma vez gerado o arquivo \texttt{.fpg}, a programação da SKARAB é feita via rede Ethernet (40GbE) utilizando a biblioteca Python \textit{casperfpga}. O procedimento comum realizado no ambiente \textit{IPython} consiste em:
+\begin{enumerate}
+    \item Importar a biblioteca: \texttt{import casperfpga}.
+    \item Conectar à placa: \texttt{fpga = casperfpga.CasperFpga('IP\_DA\_SKARAB')}.
+    \item Carregar o firmware: \texttt{fpga.upload\_to\_ram\_and\_program('nome\_do\_arquivo.fpg')}.
+\end{enumerate}
+Este processo configura instantaneamente a FPGA com o novo design, permitindo o início imediato da aquisição ou processamento de dados.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.8\textwidth]{fig/skarab_workflow.png}
+\caption{Fluxo de trabalho para a plataforma SKARAB, desde a modelagem em Simulink até a programação da FPGA.}
+\label{fig:SkarabWorkflowTut}
+\end{figure}
 
 \subsection{Resultados}
 
@@ -312,11 +434,11 @@ No contexto do projeto BINGO, um fator de decimação igual a 8 mostra-se adequa
 
 \subsection{O espectrômetro do BINGO e desafios}
 
-No backend digital, a placa SKARAB foi configurada e operada com sucesso com 187,5 MHz de largura de banda e 32.768 bins de frequência, com identificação da faixa dinâmica livre de espúrios e sincronização de clock adequada.
+    \quad No desenvolvimento do backend digital para o projeto BINGO, a placa SKARAB foi configurada com sucesso para operar como um espectrômetro em tempo real com largura de banda de 187,5~MHz e resolu\c{c}\~ao de 32.768 bines de frequ\^encia. Esta configura\c{c}\~ao baseia-se no \textit{toolflow} CASPER, integrando blocos de FFT (\textit{Fast Fourier Transform}) de alto desempenho e acumuladores vetoriais. A valida\c{c}\~ao do sistema incluiu a identifica\c{c}\~ao da faixa din\^amica livre de esp\'urios (SFDR) e a verifica\c{c}\~ao da integridade do sinal em condi\c{c}\~oes de laborat\'orio.
 
-O espectrometro do BINGO, como desenvolvimentos futuros, incluem a expansão para 375 MHz de largura de banda com 8.192 bins de frequência e dois ADCs, a sincronização dos blocos de propriedade intelectual (IP) FFT CASPER, e o gerenciamento aprimorado de metadados no firmware através dos protocolos SPEAD e UDP.
+    Entretanto, a implementa\c{c}\~ao revelou desafios t\'ecnicos significativos. A sincroniza\c{c}\~ao do \textit{clock} de amostragem entre o ADC e o processamento na FPGA exige um controle rigoroso de fase e baixos n\'iveis de \textit{jitter} para evitar degrada\c{c}\~ao na sensibilidade do instrumento. Outro ponto cr\'itico \'e o gerenciamento da alta taxa de transfer\^encia de dados via portas 40~GbE. Em regimes de 187,5~MHz, o fluxo de pacotes UDP deve ser otimizado para evitar perdas ou \textit{overflow} nos \textit{buffers} de recep\c{c}\~ao do servidor de aquisi\c{c}\~ao.
 
-Os principais desafios neste domínio incluem a depuração do firmware, o manuseio de altas taxas de transferência de dados através de múltiplas portas 40 GbE na Placa Mezanino Ethernet do SKARAB, e o desenvolvimento de blocos de IP de sincronização e marcação temporal (timestamping).
+    Os pr\'oximos passos para o espectr\^ometro incluem a expans\~ao da largura de banda para 375~MHz (utilizando dual-ADC) e a redu\c{c}\~ao do n\'umero de bines para 8.192 para otimizar o uso de recursos de mem\'oria BRAM na FPGA. Al\'em disso, estamos desenvolvendo blocos de IP para o gerenciamento de metadados via protocolo SPEAD, garantindo a rastreabilidade temporal dos dados atrav\'es de \textit{timestamps} de alta precis\~ao sincronizados via sinal PPS (\textit{Pulse Per Second}).
 
 No que diz respeito ao receptor analógico, a corneta Uirapuru foi montada e testada, e a caracterização do amplificador de baixo ruído (LNA) e dos filtros já foi concluída.
 
@@ -328,14 +450,45 @@ O objetivo principal é usar os módulos ADC do SKARAB para digitalizar quatro e
 
 No que diz respeito à aquisição de dados e geração de arquivos FITS, uma estrutura de cabeçalho FITS já foi projetada, e os dados de espectro foram armazenados com sucesso no formato FITS.Os próximos passos visam incorporar o suporte completo a metadados via pacotes UDP (por exemplo, tempo de sincronização, marcações temporais (timestamps), contadores de heap e de pacotes), bem como a caracterização da temperatura do sistema ($T_{sys}$) e da temperatura de carga de calibração ($T_{cal}$).Os principais desafios incluem o desenvolvimento de software capaz de integrar dados ordenados por tempo (TOD), metadados SPEAD e marcações temporais de alta precisão em arquivos FITS, juntamente com o estabelecimento de um sistema de banco de dados para o gerenciamento de dados em grande escala.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{fig/bingo_goals_pt.png}
-    \caption{Conquistas, Próximos Passos e Desafios do BINGO.}
-    \label{fig:bingo_stateofstart}
-\end{figure}
+\begin{table}[h!]
+\centering
+\caption{Conquistas, Pr\'oximos Passos e Desafios do BINGO (Status em 15/01/2026).}
+\label{tab:bingo_goals}
+\small
+\begin{tabularx}{\textwidth}{@{} l XXX @{}}
+\toprule
+\textbf{Categoria} & \textbf{Principais Conquistas} & \textbf{Pr\'oximos Passos} & \textbf{Desafios em Curso} \\ \midrule
+Receptor Anal\'ogico & 
+\textbullet\ Montagem da corneta Uirapuru. \newline 
+\textbullet\ LNA e filtros testados. \newline 
+\textbullet\ S21 medido no LABMET. & 
+\textbullet\ Temperatura de ru\'ido. \newline 
+\textbullet\ Calibra\c{c}\~ao refinada. \newline 
+\textbullet\ Estabilidade backend. & 
+\textbullet\ Mitiga\c{c}\~ao de instabilidade. \newline 
+\textbullet\ Estabilidade em campo. \\ \midrule
+Backend (SKARAB) & 
+\textbullet\ 187,5~MHz / 32k bines OK. \newline 
+\textbullet\ SFDR e integridade validados. \newline 
+\textbullet\ Toolflow CASPER funcional. & 
+\textbullet\ Upgrade 375~MHz dual-ADC. \newline 
+\textbullet\ Otimiza\c{c}\~ao para 8k bines. \newline 
+\textbullet\ Blocos IP para SPEAD. & 
+\textbullet\ Sincroniza\c{c}\~ao PPS/Phase. \newline 
+\textbullet\ Throughput UDP 40~GbE. \newline 
+\textbullet\ Multi-board sync. \\ \midrule
+Dados (FITS) & 
+\textbullet\ Cabe\c{c}alho FITS OK. \newline 
+\textbullet\ Escrita de espectros. \newline 
+\textbullet\ Pipeline inicial. & 
+\textbullet\ TOD + UDP metadados. \newline 
+\textbullet\ Tsys/Tcal autom\'atico. & 
+\textbullet\ Sincroniza\c{c}\~ao de metadados. \newline 
+\textbullet\ Redu\c{c}\~ao Big Data. \\ \bottomrule
+\end{tabularx}
+\end{table}
 
-A Figura~\ref{fig:bingo_stateofstart} resume as principais conquistas, os próximos passos planejados e os desafios em curso para o projeto UIRAPURU/BINGO-ABDUS até 18 de novembro de 2025. As atividades estão organizadas em três categorias: receptor analógico, placa backend digital (SKARAB) e aquisição de dados com geração de arquivos FITS.
+A Tabela~\ref{tab:bingo_goals} resume as principais conquistas, os próximos passos planejados e os desafios em curso para o projeto UIRAPURU/BINGO-ABDUS até 15 de janeiro de 2026. As atividades estão organizadas em três categorias: receptor analógico, placa backend digital (SKARAB) e aquisição de dados com geração de arquivos FITS.
 
 No geral, este roteiro destaca progressos significativos em todos os subsistemas, ao mesmo tempo que identifica os desafios técnicos que devem ser abordados para garantir a confiabilidade, estabilidade e escalabilidade do projeto UIRAPURU/BINGO.
 
