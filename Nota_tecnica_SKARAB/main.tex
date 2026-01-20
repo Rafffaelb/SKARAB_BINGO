@@ -25,6 +25,8 @@
 \usepackage{lmodern}
 \usepackage{tabularx,array,booktabs}
 \usepackage[left=2.5cm,right=2.5cm,top=1.5cm,bottom=2.5cm,footnotesep=0.5cm]{geometry}
+\usepackage{eso-pic}
+\usepackage{tikz}
 
 \setlength{\oddsidemargin}{0.5cm}
 \setlength{\textwidth}{15.5cm}
@@ -34,6 +36,15 @@
 \pagestyle{empty}
 
 \begin{document}
+
+% Watermark configuration - UFCG logo on all pages
+\AddToShipoutPictureBG{%
+    \begin{tikzpicture}[remember picture, overlay]
+        \node[opacity=0.15] at (current page.center) {%
+            \includegraphics[width=0.3\textwidth]{fig/UFCG_brasao.png}%
+        };
+    \end{tikzpicture}%
+}
 
 \begin{center}
     \Large{\textbf{Nota técnica SKARAB}}
@@ -55,30 +66,59 @@ LABMET \& Unidade Acadêmica de Física - Universidade Federal de Campina Grande
 
 \section{Introdução}
 
-\quad O presente trabalho tem como objetivo principal descrever o equipamento, a configuração, a utilização e a análise da plataforma SKARAB no contexto do radiotelescópio BINGO. 
-Buscou-se integrar o conhecimento teórico em processamento digital de sinais à prática de instrumentação científica aplicada à radioastronomia, promovendo o domínio das ferramentas e dos ambientes necessários para o controle e a operação da placa FPGA. 
-Os objetivos específicos deste trabalho são:
+\quad O presente trabalho documenta de forma abrangente a implementação, configuração e validação experimental da plataforma SKARAB como backend digital para o radiotelescópio BINGO (Baryon Acoustic Oscillations from Integrated Neutral Gas Observations). Esta nota técnica representa o registro consolidado das atividades de instrumentação desenvolvidas no âmbito do projeto, integrando conhecimento teórico em processamento digital de sinais, prática de instrumentação científica aplicada à radioastronomia e caracterização de sistemas receptores de micro-ondas.
+
+A plataforma SKARAB (\textbf{S}quare \textbf{K}ilometre \textbf{A}rray \textbf{R}econfigurable \textbf{A}pplication \textbf{B}oard) é uma solução de hardware reconfigurável baseada em FPGA Virtex-7 (XC7VX690T), desenvolvida pela empresa sul-africana Peralex de acordo com as especificações do SKAO-SA. Equipada com conversores analógico-digitais (ADC) de 14 bits operando a 3 GSps e interfaces Ethernet de 40 GbE, a SKARAB oferece capacidade de processamento em tempo real adequada para espectrometria digital de banda larga, requisito fundamental para observações de HI (hidrogênio neutro) na faixa de 980-1260 MHz.
+
+\subsection*{Escopo e Objetivos}
+
+Os objetivos principais desta nota técnica são:
 
 \begin{itemize}
-    \item Compreender o funcionamento da plataforma SKARAB e sua aplicação no projeto BINGO;
-    \item Instalar, configurar e utilizar as ferramentas de software associadas, como \textit{casperfpga}, \textit{mlib\_devel}, Python~2.7, MATLAB e Vivado;
-    \item Realizar testes em ambiente local com a placa SKARAB operando em modo autônomo;
-    \item Apoiar o desenvolvimento de soluções que facilitem o controle e a análise dos dados adquiridos pelo radiotelescópio.
+    \item \textbf{Descrição da plataforma SKARAB}: Apresentar as características técnicas do hardware, incluindo a FPGA Virtex-7, os conversores ADC TI ADC32RF45, os módulos mezzanine QSFP+ para transmissão de dados, e a arquitetura de processamento reconfigurável;
+    
+    \item \textbf{Infraestrutura de software}: Documentar o processo de instalação e configuração do ecossistema CASPER (Collaboration for Astronomy Signal Processing and Electronics Research), incluindo as ferramentas \textit{casperfpga} (Python 2.7), \textit{mlib\_devel} (Python 3.x), MATLAB R2018a, Xilinx Vivado 2019.1 e o fluxo de desenvolvimento de firmware para FPGA;
+    
+    \item \textbf{Processamento digital de sinais}: Explicar os fundamentos da espectrometria digital implementada na SKARAB, incluindo os conceitos de decimação, conversão digital descendente (DDC), transformada rápida de Fourier (FFT) e acumulação vetorial;
+    
+    \item \textbf{Desenvolvimento de espectrômetro}: Detalhar o design e implementação do espectrômetro de banda larga operando a 187,5 MHz com 32.768 bins de frequência, descrevendo os blocos funcionais em Simulink e o fluxo de geração de bitstream;
+    
+    \item \textbf{Caracterização do receptor analógico}: Apresentar as medições de caracterização dos componentes do receptor Uirapuru, incluindo amplificadores de baixo ruído (LNA), filtros passa-banda tipo cavidade, isoladores e acopladores híbridos, documentando parâmetros S ($S_{21}$, $S_{11}$) medidos no Laboratório de Metrologia (LABMET);
+    
+    \item \textbf{Validação experimental}: Reportar os resultados de testes em bancada e observações com a corneta Uirapuru, incluindo detecção de sinais controlados (RFI intencional com drone), sinais GPS L5 (1176 MHz), trânsitos solares e observações de 24 horas em modo TOD (Time-Ordered Data);
+    
+    \item \textbf{Infraestrutura de dados}: Descrever o desenvolvimento do sistema de aquisição de dados, incluindo transmissão UDP via 40 GbE, protocolo SPEAD para metadados, geração de arquivos FITS e estratégias de armazenamento em larga escala;
+    
+    \item \textbf{Estado atual e perspectivas}: Apresentar o status consolidado do projeto, identificando conquistas alcançadas, próximos passos planejados e desafios técnicos em aberto nas áreas de receptor analógico, backend digital e pipeline de dados.
 \end{itemize}
 
-Como parte da instrumentação  (estágio 0) do projeto BINGO, os trabalhos em torno da SKARAB são baseados nos tutoriais disponíveis pela CASPER (Collaboration for Astronomy Signal Processing and Electronics Research
-) \footnote{https://casper.berkeley.edu}, disponíveis em sua Wikipage (\url{https://casper.berkeley.edu/wiki/Main_Page}).
+\subsection*{Contexto do Projeto BINGO}
 
-Os tutoriais, toolflows e demais elementos de software utilizados para a programação das SKARABs podem ser encontrados (ou listados, no caso de software proprietário) em \url{https://casper.berkeley.edu/wiki/Main_Page}. Os links para seções relevantes a esta nota técnica são: 
+Como parte da fase de instrumentação (estágio 0) do projeto BINGO, os trabalhos em torno da SKARAB são fundamentados nos tutoriais e ferramentas disponibilizados pela colaboração CASPER\footnote{\url{https://casper.berkeley.edu}}, uma iniciativa internacional dedicada ao desenvolvimento de sistemas de processamento de sinais para radioastronomia. O ecossistema CASPER fornece bibliotecas de blocos para MATLAB/Simulink, ferramentas de compilação automática (\textit{toolflow}) e frameworks de controle em Python, permitindo o desenvolvimento rápido de sistemas de aquisição e processamento digital de sinais.
+
+Os principais recursos utilizados incluem:
 
 \begin{itemize}
     \item Software em geral: \url{https://casper.berkeley.edu/wiki/Software}
-    \item Toolflows: \url{https://casper-toolflow.readthedocs.io/en/latest/}
-    \item Tutoriais: esta página de tutoriais da CASPER não é atualizada desde 2017. Tutoriais e atualizações a partir dessa data foram transferidos um GITHub (\url{https://casper-toolflow.readthedocs.io/en/latest/}). Entretanto, há informações interessantes e links atualizados na página original, em \url{https://casper.berkeley.edu/wiki/Tutorials}
-
+    \item Toolflows e documentação: \url{https://casper-toolflow.readthedocs.io/en/latest/}
+    \item Tutoriais: A documentação original (\url{https://casper.berkeley.edu/wiki/Tutorials}) não é atualizada desde 2017, tendo sido migrada para o repositório GitHub da colaboração. Ambas as fontes foram consultadas neste trabalho.
 \end{itemize}
 
-Dessa forma, esta nota técnica está organizada nas seguintes seções: a Seção 2 apresenta a descrição das placas SKARAB, incluindo comentários sobre a FPGA Virtex-7 e seus mezzaninos ADC e interfaces Ethernet QSFP+; a Seção 3 detalha as atividades desenvolvidas, abrangendo a instalação dos pacotes básicos, o processo de decimação no contexto do processamento digital de sinais durante a construção do firmware, os resultados obtidos com os primeiros espectrômetros e o objetivo final do trabalho; por fim, a Seção 4 discute o estado atual do projeto e as perspectivas futuras.
+\subsection*{Estrutura do Documento}
+
+Esta nota técnica está organizada da seguinte forma:
+
+\begin{itemize}
+    \item \textbf{Seção 2 -- Descrição das SKARABs}: Apresenta a arquitetura de hardware da plataforma, incluindo especificações detalhadas da FPGA Virtex-7 XC7VX690T (693.120 células lógicas, 3.600 blocos DSP), dos conversores ADC TI ADC32RF45 (dual-channel, 14-bit, 3 GSps) e dos módulos mezzanine QSFP+ (4$\times$40 GbE). Inclui também uma introdução aos conceitos de FPGA e computação reconfigurável.
+    
+    \item \textbf{Seção 3 -- Descrição das Atividades}: Detalha a trajetória de desenvolvimento, desde a instalação dos ambientes de software (Ubuntu 16.04, MATLAB, Vivado) até a implementação de espectrômetros funcionais. Aborda os conceitos de decimação e DDC, apresenta o fluxo de trabalho (workflow) para geração de bitstream e programação da FPGA, detalha o tutorial introdutório de familiarização com a SKARAB e descreve o design completo do espectrômetro (Tutorial 4), incluindo os blocos ADC, FFT, cálculo de potência e acumulação vetorial em BRAM. Apresenta os primeiros resultados obtidos em bancada com tons de CW e fontes de ruído.
+    
+    \item \textbf{Seção 4 -- Status Atual do Trabalho}: Documenta o estado atual do protótipo do receptor analógico Uirapuru, apresentando medições de caracterização de componentes (LNA WanTcom modelo WBA0913AS com ganho de 38 dB, filtro passa-banda de cavidade 980-1260 MHz, isolador UIY 3434A960T1260SF, acoplador híbrido). Reporta os resultados de observações experimentais, incluindo testes com transmissor em drone (detecção do terceiro harmônico em 1200 MHz), observações de sinais GPS L5 e trânsitos solares, e waterfall plots de 24 horas mostrando a passagem de satélites. Apresenta uma tabela consolidada de conquistas, próximos passos e desafios nas três frentes principais: receptor analógico, backend SKARAB e infraestrutura de dados FITS.
+    
+    \item \textbf{Apêndices}: Fornecem instruções detalhadas e reproduzíveis para instalação do ambiente \textit{casperfpga} (Python 2.7) e do ambiente \textit{mlib\_devel} (MATLAB R2018a, Vivado 2019.1, Python 3.x), incluindo resolução de dependências, configuração de ambientes virtuais, compilação de ferramentas auxiliares e configuração de rede 40 GbE.
+\end{itemize}
+
+Esta documentação serve como referência técnica para a operação da plataforma SKARAB no contexto do BINGO e estabelece a base para futuras discussões sobre calibração, estabilidade de sistema, sincronização multi-placa e estratégias de mitigação de RFI (Radio Frequency Interference).
 
 \section{Descrição das SKARABs}
 
@@ -405,7 +445,7 @@ Este processo configura instantaneamente a FPGA com o novo design, permitindo o 
 
 
 
-\subsection{Espectr\'ometro (Tutorial 4)}
+\subsection{Espectr\^ometro (Tutorial 4)}
 
 \quad Um espectr\^ometro digital converte sinais do dom\'inio do tempo para o dom\'inio da frequ\^encia, geralmente utilizando o algoritmo de Transformada R\'apida de Fourier (FFT). No contexto do BINGO, o design do espectr\^ometro deve equilibrar a resolu\c{c}\~ao temporal (necess\'aria para detectar eventos r\'apidos) e a resolu\c{c}\~ao espectral (para mapeamento de HI). Esta se\c{c}\~ao detalha os blocos fundamentais do design do espectr\^ometro de banda larga desenvolvido no ecossistema CASPER para a SKARAB.
 
@@ -479,11 +519,11 @@ Este processo configura instantaneamente a FPGA com o novo design, permitindo o 
 
 \subsection{O espectrômetro do BINGO e desafios}
 
-    \quad No desenvolvimento do backend digital para o projeto BINGO, a placa SKARAB foi configurada com sucesso para operar como um espectrômetro em tempo real com largura de banda de 187,5~MHz e resolu\c{c}\~ao de 32.768 bines de frequ\^encia. Esta configura\c{c}\~ao baseia-se no \textit{toolflow} CASPER, integrando blocos de FFT (\textit{Fast Fourier Transform}) de alto desempenho e acumuladores vetoriais. A valida\c{c}\~ao do sistema incluiu a identifica\c{c}\~ao da faixa din\^amica livre de esp\'urios (SFDR) e a verifica\c{c}\~ao da integridade do sinal em condi\c{c}\~oes de laborat\'orio.
+    \quad No desenvolvimento do backend digital para o projeto BINGO, a placa SKARAB foi configurada com sucesso para operar como um espectrômetro em tempo real com largura de banda de 187,5~MHz e resolu\c{c}\~ao de 32.768 bins de frequ\^encia. Esta configura\c{c}\~ao baseia-se no \textit{toolflow} CASPER, integrando blocos de FFT (\textit{Fast Fourier Transform}) de alto desempenho e acumuladores vetoriais. A valida\c{c}\~ao do sistema incluiu a identifica\c{c}\~ao da faixa din\^amica livre de esp\'urios (SFDR) e a verifica\c{c}\~ao da integridade do sinal em condi\c{c}\~oes de laborat\'orio.
 
     Entretanto, a implementa\c{c}\~ao revelou desafios t\'ecnicos significativos. A sincroniza\c{c}\~ao do \textit{clock} de amostragem entre o ADC e o processamento na FPGA exige um controle rigoroso de fase e baixos n\'iveis de \textit{jitter} para evitar degrada\c{c}\~ao na sensibilidade do instrumento. Outro ponto cr\'itico \'e o gerenciamento da alta taxa de transfer\^encia de dados via portas 40~GbE. Em regimes de 187,5~MHz, o fluxo de pacotes UDP deve ser otimizado para evitar perdas ou \textit{overflow} nos \textit{buffers} de recep\c{c}\~ao do servidor de aquisi\c{c}\~ao.
 
-    Os pr\'oximos passos para o espectr\^ometro incluem a expans\~ao da largura de banda para 375~MHz (utilizando dual-ADC) e a redu\c{c}\~ao do n\'umero de bines para 8.192 para otimizar o uso de recursos de mem\'oria BRAM na FPGA. Al\'em disso, estamos desenvolvendo blocos de IP para o gerenciamento de metadados via protocolo SPEAD, garantindo a rastreabilidade temporal dos dados atrav\'es de \textit{timestamps} de alta precis\~ao sincronizados via sinal PPS (\textit{Pulse Per Second}).
+    Os pr\'oximos passos para o espectr\^ometro incluem a expans\~ao da largura de banda para 375~MHz (utilizando dual-ADC) e a redu\c{c}\~ao do n\'umero de bins para 8.192 para otimizar o uso de recursos de mem\'oria BRAM na FPGA. Al\'em disso, estamos desenvolvendo blocos de IP para o gerenciamento de metadados via protocolo SPEAD, garantindo a rastreabilidade temporal dos dados atrav\'es de \textit{timestamps} de alta precis\~ao sincronizados via sinal PPS (\textit{Pulse Per Second}).
 
 No que diz respeito ao receptor analógico, a corneta Uirapuru foi montada e testada, e a caracterização do amplificador de baixo ruído (LNA) e dos filtros já foi concluída.
 
@@ -513,11 +553,11 @@ Receptor Anal\'ogico &
 \textbullet\ Mitiga\c{c}\~ao de instabilidade. \newline 
 \textbullet\ Estabilidade em campo. \\ \midrule
 Backend (SKARAB) & 
-\textbullet\ 187,5~MHz / 32k bines OK. \newline 
+\textbullet\ 187,5~MHz / 32k bins OK. \newline 
 \textbullet\ SFDR e integridade validados. \newline 
 \textbullet\ Toolflow CASPER funcional. & 
 \textbullet\ Upgrade 375~MHz dual-ADC. \newline 
-\textbullet\ Otimiza\c{c}\~ao para 8k bines. \newline 
+\textbullet\ Otimiza\c{c}\~ao para 8k bins. \newline 
 \textbullet\ Blocos IP para SPEAD. & 
 \textbullet\ Sincroniza\c{c}\~ao PPS/Phase. \newline 
 \textbullet\ Throughput UDP 40~GbE. \newline 
@@ -644,7 +684,7 @@ A frequência abrange uma largura de banda de 187,5 MHz, variando de 1026,25 MHz
 \end{figure}
 
 \section{Agradecimentos}
-\quad O progresso detalhado neste trabalho foi significativamente impulsionado pelo ambiente colaborativo da colaboração BINGO, a quem expresso minha gratidão. Agradecimentos especiais são dirigidos às equipes técnicas do LABMET, sob a coordenação do Prof. Amilcar Queiroz, e ao INPE pelo apoio contínuo e por disponibilizar a infraestrutura de teste e a expertise essenciais. Estendo também meu reconhecimento à FAPESQ-PB pelo seu valioso apoio à pesquisa e ao desenvolvimento no estado da Paraíba.
+\quad O progresso detalhado neste trabalho foi significativamente impulsionado pelo ambiente colaborativo da colaboração BINGO, a quem expresso minha gratidão. Agradecimentos especiais são dirigidos às equipes técnicas do LABMET, sob a coordenação dos Professores Edmar Gurjão e Amilcar Queiroz, e ao INPE pelo apoio contínuo e por disponibilizar a infraestrutura de teste e a expertise essenciais. Estendo também meu reconhecimento à FAPESQ-PB pelo seu valioso apoio à pesquisa e ao desenvolvimento no estado da Paraíba.
 
 \appendix
 \section{Instalação e Execução do \textit{casperfpga}}
